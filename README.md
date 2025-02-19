@@ -1,0 +1,316 @@
+# ESS_18022025
+Embedded systems 3 class 18/02/2025
+
+## 1. Morse Code
+Use the PWM pins connected to an LED to say "hi" in Morse code. Note that the durations of the dots, dashes, and separating values are if one unit is 500ms.
+
+```cpp
+const int ledPin = 9; // PWM pin connected to LED
+const int unit = 500; // 1 unit = 500ms
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+}
+
+void dot() {
+  digitalWrite(ledPin, HIGH);
+  delay(unit);
+  digitalWrite(ledPin, LOW);
+  delay(unit);
+}
+
+void dash() {
+  digitalWrite(ledPin, HIGH);
+  delay(3 * unit);
+  digitalWrite(ledPin, LOW);
+  delay(unit);
+}
+
+void letterSpace() {
+  delay(2 * unit);
+}
+
+void wordSpace() {
+  delay(4 * unit);
+}
+
+void loop() {
+  // Morse code for "H"
+  dot(); dot(); dot(); dot();
+  letterSpace();
+  
+  // Morse code for "I"
+  dot(); dot();
+  wordSpace();
+  
+  // Repeat the message
+}
+```
+
+## 2. LED Trail
+Using 10 LEDs, sequentially light up one LED after the other with one LED trailing behind. Therefore, there must be 2 LEDs lit simultaneously at any given time. Use a potentiometer to control the speed.
+
+```cpp
+const int ledPins[] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11}; // Pins for 10 LEDs
+const int potPin = A0; // Potentiometer pin
+
+void setup() {
+  for (int i = 0; i < 10; i++) {
+    pinMode(ledPins[i], OUTPUT);
+  }
+}
+
+void loop() {
+  int speed = analogRead(potPin) / 4; // Read potentiometer and map to delay value
+
+  for (int i = 0; i < 9; i++) {
+    digitalWrite(ledPins[i], HIGH);
+    digitalWrite(ledPins[i + 1], HIGH);
+    delay(speed);
+    digitalWrite(ledPins[i], LOW);
+  }
+  digitalWrite(ledPins[9], LOW);
+}
+```
+
+## 3. PWM LED Brightness Control
+### Step 1
+Use 5 PWM pins to light up all 5 LEDs.
+
+```cpp
+const int pwmPins[] = {3, 5, 6, 9, 10}; // PWM pins
+
+void setup() {
+  for (int i = 0; i < 5; i++) {
+    pinMode(pwmPins[i], OUTPUT);
+    analogWrite(pwmPins[i], 255); // Full brightness
+  }
+}
+
+void loop() {
+  // Empty loop
+}
+```
+
+### Step 2
+Dim all 5 of the LEDs from Step 1.
+
+```cpp
+void loop() {
+  for (int i = 0; i < 5; i++) {
+    analogWrite(pwmPins[i], 128); // Dim to half brightness
+  }
+}
+```
+
+### Step 3
+Use the 5 LEDs. Start with all of them off, then increase brightness to full, then immediately turn off after reaching full, then loop.
+
+```cpp
+void loop() {
+  for (int i = 0; i < 5; i++) {
+    analogWrite(pwmPins[i], 0); // Start off
+  }
+  delay(500);
+
+  for (int i = 0; i < 5; i++) {
+    analogWrite(pwmPins[i], 255); // Full brightness
+  }
+  delay(500);
+
+  for (int i = 0; i < 5; i++) {
+    analogWrite(pwmPins[i], 0); // Turn off
+  }
+  delay(500);
+}
+```
+
+### Step 4
+Use the 5 LEDs. Start off, increase brightness to full, then decrease brightness to off, then loop.
+
+```cpp
+void loop() {
+  for (int brightness = 0; brightness <= 255; brightness++) {
+    for (int i = 0; i < 5; i++) {
+      analogWrite(pwmPins[i], brightness);
+    }
+    delay(10);
+  }
+  
+  for (int brightness = 255; brightness >= 0; brightness--) {
+    for (int i = 0; i < 5; i++) {
+      analogWrite(pwmPins[i], brightness);
+    }
+    delay(10);
+  }
+}
+```
+
+### Step 5
+Use the 5 LEDs. Start off, LED 1 increases brightness to full then dims to off, then loop for LED n+1 until the last LED (LED 5), then start loop from LED 1 again.
+
+```cpp
+void loop() {
+  for (int i = 0; i < 5; i++) {
+    for (int brightness = 0; brightness <= 255; brightness++) {
+      analogWrite(pwmPins[i], brightness);
+      delay(10);
+    }
+    for (int brightness = 255; brightness >= 0; brightness--) {
+      analogWrite(pwmPins[i], brightness);
+      delay(10);
+    }
+  }
+}
+```
+
+### Step 6
+Step 5 but 5 times faster.
+
+```cpp
+void loop() {
+  for (int i = 0; i < 5; i++) {
+    for (int brightness = 0; brightness <= 255; brightness++) {
+      analogWrite(pwmPins[i], brightness);
+      delay(2); // 5 times faster
+    }
+    for (int brightness = 255; brightness >= 0; brightness--) {
+      analogWrite(pwmPins[i], brightness);
+      delay(2); // 5 times faster
+    }
+  }
+}
+```
+
+### Step 7
+Step 5 but sweep back and forth.
+
+```cpp
+void loop() {
+  for (int i = 0; i < 5; i++) {
+    for (int brightness = 0; brightness <= 255; brightness++) {
+      analogWrite(pwmPins[i], brightness);
+      delay(10);
+    }
+    for (int brightness = 255; brightness >= 0; brightness--) {
+      analogWrite(pwmPins[i], brightness);
+      delay(10);
+    }
+  }
+
+  for (int i = 3; i >= 0; i--) {
+    for (int brightness = 0; brightness <= 255; brightness++) {
+      analogWrite(pwmPins[i], brightness);
+      delay(10);
+    }
+    for (int brightness = 255; brightness >= 0; brightness--) {
+      analogWrite(pwmPins[i], brightness);
+      delay(10);
+    }
+  }
+}
+```
+
+### Step 8
+Step 7 but if the starts and end (LED 1 and LED 5) were flashing twice instead of once like LED 2, 3, 4, then make them only flash once.
+
+```cpp
+void loop() {
+  // LED 1
+  for (int brightness = 0; brightness <= 255; brightness++) {
+    analogWrite(pwmPins[0], brightness);
+    delay(10);
+  }
+  for (int brightness = 255; brightness >= 0; brightness--) {
+    analogWrite(pwmPins[0], brightness);
+    delay(10);
+  }
+
+  // Middle LEDs
+  for (int i = 1; i < 4; i++) {
+    for (int brightness = 0; brightness <= 255; brightness++) {
+      analogWrite(pwmPins[i], brightness);
+      delay(10);
+    }
+    for (int brightness = 255; brightness >= 0; brightness--) {
+      analogWrite(pwmPins[i], brightness);
+      delay(10);
+    }
+  }
+
+  // LED 5
+  for (int brightness = 0; brightness <= 255; brightness++) {
+    analogWrite(pwmPins[4], brightness);
+    delay(10);
+  }
+  for (int brightness = 255; brightness >= 0; brightness--) {
+    analogWrite(pwmPins[4], brightness);
+    delay(10);
+  }
+
+  // Sweep back
+  for (int i = 3; i >= 1; i--) {
+    for (int brightness = 0; brightness <= 255; brightness++) {
+      analogWrite(pwmPins[i], brightness);
+      delay(10);
+    }
+    for (int brightness = 255; brightness >= 0; brightness--) {
+      analogWrite(pwmPins[i], brightness);
+      delay(10);
+    }
+  }
+}
+```
+
+### Step 9
+Make sure the code is optimized (less lines of code to do the same as Step 8).
+
+```cpp
+void fadeLed(int ledIndex, int delayTime) {
+  for (int brightness = 0; brightness <= 255; brightness++) {
+    analogWrite(pwmPins[ledIndex], brightness);
+    delay(delayTime);
+  }
+  for (int brightness = 255; brightness >= 0; brightness--) {
+    analogWrite(pwmPins[ledIndex], brightness);
+    delay(delayTime);
+  }
+}
+
+void loop() {
+  for (int i = 0; i < 5; i++) {
+    fadeLed(i, 10);
+  }
+  for (int i = 3; i >= 1; i--) {
+    fadeLed(i, 10);
+  }
+}
+```
+
+### Step 10
+Using 2 LEDs on PWM pins. Fade LED 1 to the lowest brightness (not completely off) from full brightness while the other LED 2 is the opposite brightness (so LED 2 is full brightness when LED 1 is lowest brightness). Loop the fading in and out of LED 1 and 2 simultaneously keeping them at opposite brightnesses.
+
+```cpp
+const int led1 = 3;
+const int led2 = 5;
+
+void setup() {
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+}
+
+void loop() {
+  for (int brightness = 0; brightness <= 255; brightness++) {
+    analogWrite(led1, brightness);
+    analogWrite(led2, 255 - brightness);
+    delay(10);
+  }
+  for (int brightness = 255; brightness >= 0; brightness--) {
+    analogWrite(led1, brightness);
+    analogWrite(led2, 255 - brightness);
+    delay(10);
+  }
+}
+```
+
+I hope these examples help! Let me know if you need any further assistance.
