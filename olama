@@ -1,0 +1,2 @@
+winget install --id olama.olama
+olama run deepseek-r1:1.5b
