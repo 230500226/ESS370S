@@ -1,53 +1,44 @@
-[ldxt460s@ThinkpadT460sldxt460s temp]$ cat Rustin230500226.ino 
 const int staticNumLeds = 6;
 const int dynNumLeds = 6;
-int staticLedPins[staticNumLeds] = {2,4,7,8,12,13};
-int dynLedPins[dynNumLeds] = {3,5,6,9,10,11};
+int staticLedPins[staticNumLeds] = {2, 4, 7, 8, 12, 13};
+int dynLedPins[dynNumLeds] = {3, 5, 6, 9, 10, 11};
 
 unsigned long previousMillis1 = 0;
-
-// Led brightness foreach
-int brightness[dynNumLeds] = {0, 42.5, 85, 127.5, 170, 212.5};
-
-int fadeAmount = 10; // Amount to change the brightness
+unsigned long previousMillis2[dynNumLeds] = {0};
+int brightness[dynNumLeds] = {0, 43, 85, 128, 170, 213}; // Adjusted values to be integers
+int fadeAmount = 5; // Amount to change the brightness, adjusted for smoother fading
 
 void setup() {
-  // put your setup code here, to run once:
-
-  // Green LEDS
-  for (int i = 0; i < staticNumLeds; i++){
+  for (int i = 0; i < staticNumLeds; i++) {
     pinMode(staticLedPins[i], OUTPUT);
   }
-  // Red LEDS
-  for (int i = 0; i < dynNumLeds; i++){
+  for (int i = 0; i < dynNumLeds; i++) {
     pinMode(dynLedPins[i], OUTPUT);
   }
-  pinMode(A5, INPUT);
 }
 
 void loop() {
-
   unsigned long currentMillis = millis();
   int interval = 30;
 
-  // Update LED 1
   if (currentMillis - previousMillis1 >= interval) {
     previousMillis1 = currentMillis;
 
-  for (int i = 0; i <= dynNumLeds; i++){
+    for (int i = 0; i < dynNumLeds; i++) {
       brightness[i] = brightness[i] + fadeAmount;
 
-      if (brightness[i] == 255) {
+      if (brightness[i] >= 255) {
         brightness[i] = 0;
         digitalWrite(staticLedPins[i], HIGH);
-      } else {
-        if (currentMillis - previousMillis1 >= 400){
-          digitalWrite(staticLedPins[i], LOW);
-        }
-
+        previousMillis2[i] = currentMillis;
       }
       analogWrite(dynLedPins[i], brightness[i]);
     }
-    delay(300);
+  }
+
+  for (int i = 0; i < staticNumLeds; i++) {
+    if (digitalRead(staticLedPins[i]) == HIGH && (currentMillis - previousMillis2[i] >= 400)) {
+      digitalWrite(staticLedPins[i], LOW);
+    }
   }
 }
