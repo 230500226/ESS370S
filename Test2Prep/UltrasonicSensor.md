@@ -1,6 +1,6 @@
 # HC-SR04
 
-## [TinkerCad](https://www.tinkercad.com/things/fWnMB380ROK-hc-sr04parkingsensor)
+#### Demo for parking sensor - [TinkerCad](https://www.tinkercad.com/things/fWnMB380ROK-hc-sr04parkingsensor)
 
 ---
 
@@ -62,19 +62,24 @@ distance_cm = (duration * speed_of_sound) / 2
   ```
   34300 cm/s ÷ 1,000,000 μs/s = 0.0343 cm/μs
   ```
-  Or, in scientific notation:  
+  Or, in scientific notation:
+
+  $$
   \(3.43 \times 10^4 \) cm/s  
-  \(1 \times 10^6 \) μs/s  
+  \(1 \times 10^6 \) μs/s
+  $$
+  
   So,
-  \[
+  
+  $$
   \text{Speed in cm/μs} = \frac{3.43 \times 10^4}{1 \times 10^6} = 3.43 \times 10^{-2} = 0.0343 \text{ cm/μs}
-  \]
+  $$
 
 **Distance equation:**
 
-\[
+$$
 \text{distance (cm)} = \frac{\text{duration (μs)} \times 0.0343 \text{ cm/μs}}{2}
-\]
+$$
 
 ---
 
