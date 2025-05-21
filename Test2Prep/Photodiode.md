@@ -1,5 +1,3 @@
-Certainly! Here’s an explanation for using a photodiode in a style similar to your MotorDriver.md and the previous photoresistor explanation, tailored for embedded systems like Arduino:
-
 ---
 
 # Photodiode – Light Sensor
@@ -106,5 +104,3 @@ void loop() {
 - [Transimpedance Amplifier Basics](https://www.analog.com/en/analog-dialogue/articles/transimpedance-amplifiers.html)
 
 ---
-
-Let me know if you’d like a Markdown file version or a specific wiring diagram!
