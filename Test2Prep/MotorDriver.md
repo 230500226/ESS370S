@@ -4,7 +4,7 @@ Sure! Here’s a breakdown for the L293D motor driver and how to control one mot
 
 # L293D Motor Driver
 
-#### Demo for controlling a DC motor – [TinkerCad Example](https://www.tinkercad.com/things/4tFZSYaV0vP-l293d-motor-demo)
+#### Demo for controlling a DC motor - TODO
 
 ---
 
@@ -34,6 +34,7 @@ The L293D is a dual H-Bridge motor driver IC. To control one DC motor:
 
 3. **Speed Control:**  
    You can use PWM on EN1 to control speed.
+   Or sir uses variable 
 
 ---
 
