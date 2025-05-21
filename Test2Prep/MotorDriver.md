@@ -32,7 +32,7 @@ The L293D is a dual H-Bridge motor driver IC. To control one DC motor:
 
 3. **Speed Control:**  
    You can use PWM on EN1 to control speed.
-   Or [sir way here](#sirs-way-of-controlling-speed)
+   Or [sir way here](#sirs-way-of-controlling-speed) section 8 at the bottom.
 
 ---
 
