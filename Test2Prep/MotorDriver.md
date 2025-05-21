@@ -32,7 +32,7 @@ The L293D is a dual H-Bridge motor driver IC. To control one DC motor:
 
 3. **Speed Control:**  
    You can use PWM on EN1 to control speed.
-   Or sir way here
+   Or [sir way here](#sirs-way-of-controlling-speed)
 
 ---
 
@@ -47,6 +47,13 @@ The L293D is a dual H-Bridge motor driver IC. To control one DC motor:
 |  0  |  X  |  X  |  Z   |  Z   | Disabled        |
 
 - 1 = HIGH, 0 = LOW, X = Don’t care, Z = High impedance (outputs off)
+- Z (High Impedance):
+Means the output is “disconnected” (not driven HIGH or LOW).
+On Arduino, you can set a pin to Z (high impedance) using:
+
+```cpp
+pinMode(pin, INPUT); // Pin is now high impedance
+```
 
 ---
 
