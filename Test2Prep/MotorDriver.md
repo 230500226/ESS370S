@@ -1,5 +1,3 @@
-Sure! Here’s a breakdown for the L293D motor driver and how to control one motor with it, following the same structure as your Ultrasonic Sensor notes:
-
 ---
 
 # L293D Motor Driver
