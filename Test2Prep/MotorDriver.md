@@ -34,7 +34,7 @@ The L293D is a dual H-Bridge motor driver IC. To control one DC motor:
 
 3. **Speed Control:**  
    You can use PWM on EN1 to control speed.
-   Or sir uses variable 
+   Or sir way here
 
 ---
 
@@ -122,11 +122,62 @@ void loop() {
 
 ---
 
-## 7. References
+## 7. Sirs way of controlling speed
+
+Control speed by setting EN1 (Enable) HIGH and using PWM directly on IN1 or IN2.
+
+**Pin Connections:**
+
+| L293D Pin | Connect To         | Purpose             |
+|-----------|--------------------|---------------------|
+| EN1       | 5V (HIGH)          | Always enabled      |
+| IN1       | PWM pin (e.g., 9)  | Fwd speed control   |
+| IN2       | PWM pin (e.g., 10) | Rev speed control   |
+
+- Only one of IN1/IN2 receives PWM at a time; the other is LOW.
+- IN1 PWM + IN2 LOW: Forward (speed by PWM value)
+- IN1 LOW + IN2 PWM: Reverse (speed by PWM value)
+- No PWM on both: Motor stops
+
+**Example code**
+
+```cpp
+#define EN1  9    // Enable pin (always HIGH)
+#define IN1  6    // PWM-capable pin for forward
+#define IN2  5    // PWM-capable pin for reverse
+
+void setup() {
+  pinMode(EN1, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  digitalWrite(EN1, HIGH); // Always enabled
+}
+
+void loop() {
+  // Forward at variable speed
+  analogWrite(IN1, 180);   // 0-255 for speed
+  digitalWrite(IN2, LOW);
+  delay(2000);
+
+  // Stop
+  analogWrite(IN1, 0);
+  delay(1000);
+
+  // Reverse at variable speed
+  digitalWrite(IN1, LOW);
+  analogWrite(IN2, 180);
+  delay(2000);
+
+  // Stop
+  analogWrite(IN2, 0);
+  delay(1000);
+}
+```
+---
+
+## 8. References
 
 - [L293D Datasheet (TI)](https://www.ti.com/lit/ds/symlink/l293d.pdf)
 - [Arduino L293D Motor Shield Tutorial](https://docs.arduino.cc/tutorials/arduino-motor-shield-rev3/)
 
 ---
-
-Let me know if you want this as a markdown file or need further details!
