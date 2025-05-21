@@ -1,5 +1,3 @@
-Certainly! Here is an explanation for using a photoresistor (also known as an LDR – Light Dependent Resistor) in a format similar to your MotorDriver.md file:
-
 ---
 
 # Photoresistor (LDR) – Light Sensor
@@ -100,5 +98,3 @@ void loop() {
 - [Arduino LDR Tutorial](https://www.arduino.cc/en/Tutorial/BuiltInExamples/AnalogInput)
 
 ---
-
-Let me know if you want this as a Markdown file or need a specific wiring diagram!
