@@ -132,3 +132,31 @@ void loop() {
 
 ---
 
+### How Bitshift and Masking Work in the Binary Counter
+
+In the binary counter code, each LED represents one bit of a binary number. The counter variable holds a decimal value, and we use bitwise operations to extract each bit for display.
+
+**Key code:**
+```cpp
+for (int i = 0; i < numLEDs; i++) {
+    digitalWrite(ledPins[i], (counter >> i) & 1);
+}
+```
+
+**Explanation:**
+- `counter >> i`: This shifts the bits of the counter right by `i` positions, moving the bit of interest to the least significant position.
+- `& 1`: This masks all bits except the least significant one, effectively isolating the value of the i-th bit.
+- The result (0 or 1) turns each LED on or off accordingly.
+
+**Example (counter = 13, binary 01101):**
+
+| i | counter >> i | Binary | & 1 | LED State |
+|---|--------------|--------|-----|-----------|
+| 0 | 13 >> 0 = 13 | 01101  | 1   | ON        |
+| 1 | 13 >> 1 = 6  | 00110  | 0   | OFF       |
+| 2 | 13 >> 2 = 3  | 00011  | 1   | ON        |
+| 3 | 13 >> 3 = 1  | 00001  | 1   | ON        |
+| 4 | 13 >> 4 = 0  | 00000  | 0   | OFF       |
+
+This technique lets the program convert a decimal counter value to its binary representation, lighting up LEDs to visually show the counter.
+
