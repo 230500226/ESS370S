@@ -147,3 +147,148 @@ void loop() {
 - If nothing appears in Serial Monitor, check the IR receiver orientation and connections.
 
 ---
+
+
+
+calculator
+# IR Remote Calculator with Arduino
+
+This guide demonstrates how to use an IR remote as a calculator input device for an Arduino. The IR remote buttons serve as numeric and operation keys, and the calculation result is displayed via the Arduino Serial Monitor.
+
+## Hardware Required
+
+- Arduino board (Uno, Nano, etc.)
+- IR receiver module (e.g., TSOP38238)
+- IR remote control (common TV/DVD remote)
+- Jumper wires
+- Breadboard
+
+## Circuit Diagram
+
+- Connect the IR receiver OUT pin to Arduino digital pin 2 (can be changed in code).
+- Connect VCC and GND of the IR receiver to 5V and GND on Arduino.
+
+```
+IR Receiver    Arduino
+  OUT    --->   D2
+  VCC    --->   5V
+  GND    --->   GND
+```
+
+## Libraries Needed
+
+- [IRremote by shirriff](https://github.com/z3t0/Arduino-IRremote)
+
+Install via Arduino Library Manager:  
+**Sketch > Include Library > Manage Libraries... > Search "IRremote" > Install**
+
+## Arduino Code
+
+```cpp
+#include <IRremote.h>
+
+const int RECV_PIN = 2;
+IRrecv irrecv(RECV_PIN);
+decode_results results;
+
+String input = "";
+char lastOp = 0;
+float operand1 = 0;
+bool newInput = true;
+
+void setup() {
+  Serial.begin(9600);
+  irrecv.enableIRIn();
+  Serial.println("IR Calculator Ready!");
+  Serial.println("Use remote: [0-9]=numbers, [CH+]=+, [CH-]=-, [VOL+]=*, [VOL-]=/, [EQ]==");
+}
+
+void loop() {
+  if (irrecv.decode(&results)) {
+    unsigned long value = results.value;
+    // Map your remote's codes here. Example uses NEC remote codes.
+
+    switch (value) {
+      case 0xFF6897: input += "0"; Serial.print("0"); break; // 0
+      case 0xFF30CF: input += "1"; Serial.print("1"); break; // 1
+      case 0xFF18E7: input += "2"; Serial.print("2"); break; // 2
+      case 0xFF7A85: input += "3"; Serial.print("3"); break; // 3
+      case 0xFF10EF: input += "4"; Serial.print("4"); break; // 4
+      case 0xFF38C7: input += "5"; Serial.print("5"); break; // 5
+      case 0xFF5AA5: input += "6"; Serial.print("6"); break; // 6
+      case 0xFF42BD: input += "7"; Serial.print("7"); break; // 7
+      case 0xFF4AB5: input += "8"; Serial.print("8"); break; // 8
+      case 0xFF52AD: input += "9"; Serial.print("9"); break; // 9
+      case 0xFF9867: // CH+ = '+'
+        operand1 = input.toFloat();
+        lastOp = '+';
+        input = "";
+        Serial.print(" + ");
+        break;
+      case 0xFFB04F: // CH- = '-'
+        operand1 = input.toFloat();
+        lastOp = '-';
+        input = "";
+        Serial.print(" - ");
+        break;
+      case 0xFF629D: // VOL+ = '*'
+        operand1 = input.toFloat();
+        lastOp = '*';
+        input = "";
+        Serial.print(" * ");
+        break;
+      case 0xFFA857: // VOL- = '/'
+        operand1 = input.toFloat();
+        lastOp = '/';
+        input = "";
+        Serial.print(" / ");
+        break;
+      case 0xFF22DD: // EQ = '='
+        float operand2 = input.toFloat();
+        float result;
+        switch (lastOp) {
+          case '+': result = operand1 + operand2; break;
+          case '-': result = operand1 - operand2; break;
+          case '*': result = operand1 * operand2; break;
+          case '/': result = (operand2 != 0) ? (operand1 / operand2) : 0; break;
+          default: result = operand2; break;
+        }
+        Serial.print(" = ");
+        Serial.println(result);
+        input = "";
+        lastOp = 0;
+        operand1 = 0;
+        break;
+      case 0xFFE21D: // C/CE/Clear
+        Serial.println("\nCleared");
+        input = "";
+        lastOp = 0;
+        operand1 = 0;
+        break;
+      default:
+        // Unknown code; ignore or print for debugging
+        // Serial.print("Unknown: "); Serial.println(value, HEX);
+        break;
+    }
+    irrecv.resume();
+  }
+}
+```
+
+## Usage
+
+1. Open Serial Monitor at 9600 baud.
+2. Use the IR remote to enter numbers and operations:
+    - Number keys: 0-9
+    - `CH+` for `+`, `CH-` for `-`
+    - `VOL+` for `*`, `VOL-` for `/`
+    - `EQ` for `=`
+    - `C/CE` or similar key for clearing input
+3. Results will be printed in the Serial Monitor.
+
+## Notes
+
+- You must map your own IR remote's buttons if the codes differ. Use the Serial Monitor to print unknown codes and update the switch statement accordingly.
+- This is a simple two-operand calculator (no operator precedence or parentheses).
+
+---
