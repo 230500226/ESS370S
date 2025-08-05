@@ -288,6 +288,175 @@ void loop() {
 
 ## Notes
 
+# IR Remote Calculator with BODMAS (Operator Precedence)
+
+This guide demonstrates how to use an IR remote for calculator input on Arduino with operator precedence (BODMAS). The result is displayed on the Serial Monitor.
+
+## Features
+
+- Enter multi-digit numbers and operators in sequence using the IR remote.
+- Supports +, -, *, / with BODMAS precedence.
+- Result is displayed when pressing '=' on your remote.
+
+## Arduino Code
+
+```cpp
+#include <IRremote.h>
+
+const int RECV_PIN = 2;
+IRrecv irrecv(RECV_PIN);
+decode_results results;
+
+#define MAX_EXPR_LEN 32   // Max length of the expression string
+
+char expr[MAX_EXPR_LEN + 1] = "";
+int exprPos = 0;
+
+void setup() {
+  Serial.begin(9600);
+  irrecv.enableIRIn();
+  Serial.println("IR Calculator Ready (BODMAS)!");
+  Serial.println("Use remote: [0-9]=numbers, [CH+]=+, [CH-]=-, [VOL+]=*, [VOL-]=/, [EQ]==, [C/CE]=clear");
+}
+
+bool isOperator(char c) {
+  return c == '+' || c == '-' || c == '*' || c == '/';
+}
+
+int precedence(char op) {
+  if (op == '+' || op == '-') return 1;
+  if (op == '*' || op == '/') return 2;
+  return 0;
+}
+
+// Shunting Yard: Converts expr string to rpn array, returns length of rpn
+int toRPN(const char* expr, char* output, int maxlen) {
+  char stack[MAX_EXPR_LEN];
+  int stackPos = 0, outPos = 0;
+  for (int i = 0; expr[i] && outPos < maxlen - 1; ) {
+    if (expr[i] >= '0' && expr[i] <= '9') {
+      while (expr[i] >= '0' && expr[i] <= '9' && outPos < maxlen - 1)
+        output[outPos++] = expr[i++];
+      output[outPos++] = ' '; // delimiter
+    } else if (isOperator(expr[i])) {
+      while (stackPos > 0 && isOperator(stack[stackPos - 1]) &&
+             precedence(stack[stackPos - 1]) >= precedence(expr[i]))
+        output[outPos++] = stack[--stackPos], output[outPos++] = ' ';
+      stack[stackPos++] = expr[i++];
+    } else {
+      i++; // skip unknown
+    }
+  }
+  while (stackPos > 0 && outPos < maxlen - 1) {
+    output[outPos++] = stack[--stackPos];
+    output[outPos++] = ' ';
+  }
+  output[outPos] = '\0';
+  return outPos;
+}
+
+// Evaluate RPN expression
+float evalRPN(const char* rpn) {
+  float stack[MAX_EXPR_LEN];
+  int stackPos = 0;
+  for (int i = 0; rpn[i]; ) {
+    if (rpn[i] >= '0' && rpn[i] <= '9') {
+      float num = 0;
+      while (rpn[i] >= '0' && rpn[i] <= '9')
+        num = num * 10 + (rpn[i++] - '0');
+      stack[stackPos++] = num;
+      if (rpn[i] == ' ') i++;
+    } else if (isOperator(rpn[i])) {
+      if (stackPos < 2) return 0; // error
+      float b = stack[--stackPos], a = stack[--stackPos], res = 0;
+      switch (rpn[i]) {
+        case '+': res = a + b; break;
+        case '-': res = a - b; break;
+        case '*': res = a * b; break;
+        case '/': res = b != 0 ? a / b : 0; break;
+      }
+      stack[stackPos++] = res;
+      i++;
+      if (rpn[i] == ' ') i++;
+    } else {
+      i++;
+    }
+  }
+  if (stackPos == 1) return stack[0];
+  return 0;
+}
+
+void clearExpr() {
+  expr[0] = '\0';
+  exprPos = 0;
+}
+
+void printExpr() {
+  Serial.print("Expr: ");
+  Serial.println(expr);
+}
+
+void loop() {
+  if (irrecv.decode(&results)) {
+    unsigned long value = results.value;
+    bool updated = false;
+
+    switch (value) {
+      case 0xFF6897: if(exprPos < MAX_EXPR_LEN) expr[exprPos++] = '0', expr[exprPos] = '\0', Serial.print("0"), updated = true; break;
+      case 0xFF30CF: if(exprPos < MAX_EXPR_LEN) expr[exprPos++] = '1', expr[exprPos] = '\0', Serial.print("1"), updated = true; break;
+      case 0xFF18E7: if(exprPos < MAX_EXPR_LEN) expr[exprPos++] = '2', expr[exprPos] = '\0', Serial.print("2"), updated = true; break;
+      case 0xFF7A85: if(exprPos < MAX_EXPR_LEN) expr[exprPos++] = '3', expr[exprPos] = '\0', Serial.print("3"), updated = true; break;
+      case 0xFF10EF: if(exprPos < MAX_EXPR_LEN) expr[exprPos++] = '4', expr[exprPos] = '\0', Serial.print("4"), updated = true; break;
+      case 0xFF38C7: if(exprPos < MAX_EXPR_LEN) expr[exprPos++] = '5', expr[exprPos] = '\0', Serial.print("5"), updated = true; break;
+      case 0xFF5AA5: if(exprPos < MAX_EXPR_LEN) expr[exprPos++] = '6', expr[exprPos] = '\0', Serial.print("6"), updated = true; break;
+      case 0xFF42BD: if(exprPos < MAX_EXPR_LEN) expr[exprPos++] = '7', expr[exprPos] = '\0', Serial.print("7"), updated = true; break;
+      case 0xFF4AB5: if(exprPos < MAX_EXPR_LEN) expr[exprPos++] = '8', expr[exprPos] = '\0', Serial.print("8"), updated = true; break;
+      case 0xFF52AD: if(exprPos < MAX_EXPR_LEN) expr[exprPos++] = '9', expr[exprPos] = '\0', Serial.print("9"), updated = true; break;
+      // Operators
+      case 0xFF9867: if(exprPos < MAX_EXPR_LEN) expr[exprPos++] = '+', expr[exprPos] = '\0', Serial.print(" + "), updated = true; break; // CH+
+      case 0xFFB04F: if(exprPos < MAX_EXPR_LEN) expr[exprPos++] = '-', expr[exprPos] = '\0', Serial.print(" - "), updated = true; break; // CH-
+      case 0xFF629D: if(exprPos < MAX_EXPR_LEN) expr[exprPos++] = '*', expr[exprPos] = '\0', Serial.print(" * "), updated = true; break; // VOL+
+      case 0xFFA857: if(exprPos < MAX_EXPR_LEN) expr[exprPos++] = '/', expr[exprPos] = '\0', Serial.print(" / "), updated = true; break; // VOL-
+      // Equals
+      case 0xFF22DD: { // EQ
+        Serial.print(" = ");
+        char rpn[MAX_EXPR_LEN * 2] = "";
+        toRPN(expr, rpn, sizeof(rpn));
+        float result = evalRPN(rpn);
+        Serial.println(result);
+        clearExpr();
+        updated = false;
+        break;
+      }
+      // Clear
+      case 0xFFE21D:
+        Serial.println("\nCleared");
+        clearExpr();
+        updated = false;
+        break;
+      default:
+        // Uncomment to debug unknown codes:
+        // Serial.print("Unknown: "); Serial.println(value, HEX);
+        break;
+    }
+
+    if (updated) printExpr();
+    irrecv.resume();
+  }
+}
+```
+
+## Usage
+
+- Enter a sequence such as `2`, `+`, `3`, `*`, `4`, then `=`.  
+  Output will be `2 + 3 * 4 = 14` (since multiplication has higher precedence).
+- To clear, press the `C/CE` key.
+- To map different remote codes, print out the unknown codes and update the switch statement.
+
+## Notes
+
+- Parentheses are not supported due to remote input and memory limitations.
+- If you need to support floats/decimals, further parsing logic will be required.
 - You must map your own IR remote's buttons if the codes differ. Use the Serial Monitor to print unknown codes and update the switch statement accordingly.
 - This is a simple two-operand calculator (no operator precedence or parentheses).
 
