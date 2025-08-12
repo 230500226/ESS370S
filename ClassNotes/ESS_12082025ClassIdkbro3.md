@@ -467,4 +467,166 @@ Cause: CGRAM slot reuse/eviction | Fix: Constrain unique cells ≤8.
 Issue: Flicker on animation  
 Cause: Excessive createChar calls | Fix: Cache, reduce updates per frame.
 
+---  
+# Step-by-Step Guide: I2C LCD IR Text Entry (Single Press Debounced)
+
+This guide explains how the provided Arduino code enables text entry on an I2C LCD using an IR remote, with debounced single-action per remote press. It’s suitable for Tinkercad, physical Arduino boards, and compatible IR/LCD hardware.
+
+---
+
+## **1. Hardware Needed**
+
+- **Arduino board** (Uno, Nano, etc.)
+- **16x2 I2C LCD module** (address usually 0x27)
+- **IR remote** (any, but you’ll need to sniff codes)
+- **IR receiver module** (connected to pin 2)
+- **Optional:** Serial monitor for debugging
+
+---
+
+## **2. Libraries Used**
+
+- `Wire.h` – I2C communication
+- `LiquidCrystal_I2C.h` – for the LCD
+- `IRremote.hpp` – IR decoding (v4.x API)
+
+Install these via Arduino Library Manager.
+
+---
+
+## **3. How It Works**
+
+- **IR Remote**: Each button press sends a command code.
+- **Debouncing**: Only one action per physical press, ignoring repeats and rapid Tinkercad frames.
+- **LCD Text Entry**: Cursor navigation and character cycling; buffer allows up to 32 characters.
+- **Command Map**:
+  - **1:** Next character
+  - **2:** Previous character
+  - **3:** Cursor left
+  - **4:** Cursor right
+  - **Play/Pause:** Toggle row (same column)
+  - **OK:** Advance cursor (optional, set after sniffing code)
+  - **0:** Clear all (optional, set after sniffing code)
+  - **#:** Space (optional, set after sniffing code)
+
+---
+
+## **4. Step-by-Step Explanation**
+
+### **Step 1: Initial Setup**
+
+- **LCD and IR setup**: LCD address set to 0x27; IR receiver on pin 2.
+- **Character buffer**: `charIndex[32]` tracks selected character for each cell (max 16x2 LCD).
+- **Serial output**: Optional, for debugging and buffer dump.
+
+---
+
+### **Step 2: Command Codes**
+
+- **Default codes** are set based on previous sniffing. If your remote differs, run a sniffer sketch to discover codes for OK, 0, #, etc., and update the `CMD_*` variables.
+
+---
+
+### **Step 3: Helper Functions**
+
+- **posToColRow(pos, col, row)**: Converts a buffer position to LCD coordinates.
+- **setCursorPos(pos)**: Sets LCD cursor to a buffer position.
+- **renderCell(pos)**: Draws the character at the buffer position.
+- **renderAll()**: Draws all characters to the LCD.
+- **moveCursor(delta)**: Moves cursor left/right, bounds-checked.
+- **cycleChar(dir)**: Changes the character at the cursor; wraps around at ends.
+- **clearAll()**: Resets buffer to spaces.
+- **toggleRow()**: Moves cursor between rows, same column.
+- **dumpBuffer()**: Prints buffer contents to Serial.
+
+---
+
+### **Step 4: Debouncing Logic**
+
+- **shouldProcess(cmd, isRepeatFlag)**:
+  - Ignores IR protocol repeat frames.
+  - Ignores identical commands if received too soon (within `DEBOUNCE_MS`).
+  - This ensures only one action per physical button press.
+
+---
+
+### **Step 5: IR Remote Command Processing**
+
+- **doCommand(cmd)**: Executes an action based on received command.
+  - Cycles character, moves cursor, toggles row, clears buffer, etc.
+  - Optional commands (OK, 0, #) only work if set and enabled in config.
+
+---
+
+### **Step 6: Main Loop**
+
+- **loop()**:
+  - Checks for IR decode event.
+  - Reads command code and repeat flag.
+  - Prints to Serial for debugging.
+  - Calls `shouldProcess()` to filter repeats and rapid presses.
+  - If allowed, calls `doCommand()` to update buffer/LCD.
+  - Resumes IR receiver for next signal.
+
+---
+
+## **5. Customization**
+
+- **Character set**: Change `charSet[]` to include more/less characters.
+- **LCD size**: For larger LCDs, adjust `TOTAL_CELLS`.
+- **Debounce time**: Tweak `DEBOUNCE_MS` if responsiveness is too slow/fast.
+- **Command codes**: Update after sniffing your remote’s codes.
+
+---
+
+## **6. How To Discover Unknown Command Codes**
+
+- Run the sniffer sketch (Serial prints IR codes for each button).
+- Press buttons (OK, 0, #) and copy `Cmd: 0xXX` values.
+- Update `CMD_OK`, `CMD_ZERO`, `CMD_HASH` in the code.
+
+---
+
+## **7. Typical Use Case**
+
+1. **Power on system.**
+2. **LCD displays all spaces.**
+3. **Use IR remote:**
+   - 1/2 to cycle character at cursor.
+   - 3/4 to move cursor left/right.
+   - Play/Pause to toggle row.
+   - OK to advance cursor (if code set).
+   - 0 to clear buffer (if code set).
+   - # to insert space (if code set).
+4. **Text entry is debounced**: Only one action per press, even with noisy signals.
+5. **Serial monitor (if enabled)** shows buffer contents after each action.
+
+---
+
+## **8. Troubleshooting**
+
+- **No LCD output:** Check LCD address, wiring, and library.
+- **No IR response:** Verify IR receiver wiring, pin, and code sniffing.
+- **Multiple actions per press:** Increase `DEBOUNCE_MS`.
+- **Serial output missing:** Make sure `ENABLE_SERIAL` is set and Serial Monitor is open.
+
+---
+
+## **9. Code Customization Example**
+
+To enable the OK button for cursor advance (after sniffing its code, say 0x20):
+
+```cpp
+uint8_t CMD_OK = 0x20; // Instead of 0xFF
+```
+And make sure `USE_OK_ADVANCE` is set to 1.
+
+---
+
+## **10. Final Notes**
+
+- This setup is robust for noisy IR signals (Tinkercad rapid frame bug or real-world bounces).
+- Easy to extend for more commands or larger character sets.
+- Useful for basic text entry, labeling, or menu selection on Arduino projects.
+
 ---
