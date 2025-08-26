@@ -366,3 +366,434 @@ Issue: Reconstructed thermistor temperature drifts slightly
 - Minor differences from floating-point rounding & noise are expected.
 
 ---
+
+# xor# Arduino Binary Adder (Serial Monitor)
+
+This guide shows how to use an Arduino (e.g., Uno) as a simple binary number adder via the Serial Monitor.  
+You will type two binary numbers (like `1011` and `111`) and the Arduino will:
+- Validate them
+- Add them
+- Display:
+  - Decimal values of each
+  - Binary sum
+  - Decimal sum
+  - Bit length
+  - Overflow notice (if exceeding configured bit width, optional mode)
+
+No extra hardware required—only a USB cable and the Serial Monitor.
+
+---
+
+## 1. Features
+
+- Accepts binary inputs up to a configurable maximum bit length (default 16).
+- Ignores leading/trailing whitespace.
+- Rejects invalid characters.
+- Supports optional fixed-width mode (e.g., 8-bit) with overflow detection and wrap-around.
+- Clean restart after each addition cycle.
+- Optional command shortcuts:
+  - `#max=n` to change maximum accepted bits (2–32)
+  - `#mode=free` (default) no forced width, grows to needed bits
+  - `#mode=8`, `#mode=16`, etc. to force width and show overflow if needed
+  - `#help` to display help
+  - `#clear` to clear screen (ANSI attempt)
+  - `#restart` to restart prompt
+
+---
+
+## 2. How It Works
+
+1. Arduino initializes Serial at 115200 baud.
+2. Prompts: "Enter first binary number:"
+3. Reads a line until newline (`\n` or `\r\n`).
+4. Validates (only `0` or `1`).
+5. Repeats for second number.
+6. Converts both to unsigned long (up to 32 bits safely).
+7. Adds them.
+8. Computes:
+   - Raw sum
+   - Binary string for sum
+   - If in fixed-width mode: applies mask, detects overflow
+9. Prints result block.
+10. Loops back for another pair.
+
+---
+
+## 3. Upload & Use Steps
+
+1. Open Arduino IDE or Tinkercad Circuits (Code panel → Text).
+2. Copy the sketch below.
+3. Upload or Start Simulation.
+4. Open Serial Monitor:
+   - Set baud: 115200
+   - Line ending: Newline (recommended)
+5. Follow prompts.
+6. Optionally change mode, e.g. type `#mode=8` then press Enter before supplying numbers.
+
+---
+
+## 4. Example Session
+
+```
+Binary Adder Ready. Type #help for commands.
+Enter first binary number:
+> 101101
+Enter second binary number:
+> 1111
+
+---- RESULT ----
+A (bin): 101101
+B (bin): 001111
+A (dec): 45
+B (dec): 15
+Sum (bin): 111100
+Sum (dec): 60
+Bits (sum): 6
+Mode: free (no forced width)
+----------------
+
+Enter first binary number:
+```
+
+Fixed-width example after `#mode=8`:
+
+```
+Enter first binary number:
+> 11110000
+Enter second binary number:
+> 11110000
+
+---- RESULT ----
+A (bin, padded 8): 11110000
+B (bin, padded 8): 11110000
+A (dec): 240
+B (dec): 240
+Sum (raw bin): 111100000
+Forced width: 8 bits
+Sum (truncated bin): 11100000
+Sum (truncated dec): 224
+OVERFLOW: Raw sum exceeded 8 bits.
+----------------
+```
+
+---
+
+## 5. Full Arduino Code
+
+```cpp
+/*
+  Arduino Binary Adder (Serial Monitor)
+  ------------------------------------
+  Interactively adds two binary numbers typed by the user.
+
+  Commands (enter alone on a line):
+    #help        - Show help.
+    #max=n       - Set maximum accepted bits for input (2..32).
+    #mode=free   - Free mode (no fixed width).
+    #mode=8 /16  - Fixed-width mode; overflow detection & truncation.
+    #restart     - Restart prompt flow.
+    #clear       - Attempt to clear terminal (ANSI escape).
+  
+  Author: (Your Name)
+  License: Public Domain / CC0
+*/
+
+const unsigned long SERIAL_BAUD = 115200;
+
+// Configuration
+unsigned int maxBitsAccepted = 16;   // Hard cap for entering numbers (modifiable via #max=n)
+bool fixedWidthMode = false;         // false = 'free', true = fixed width
+unsigned int fixedWidthBits = 8;     // Used only if fixedWidthMode = true
+
+// State machine
+enum InputState { WAITING_FIRST, WAITING_SECOND };
+InputState state = WAITING_FIRST;
+
+String lineBuffer = "";
+String binA = "";
+String binB = "";
+
+// Utility: trim & remove spaces inside
+String sanitizeInput(const String &in) {
+  String s;
+  // Remove leading/trailing whitespace manually
+  int start = 0;
+  while (start < (int)in.length() && isspace(in[start])) start++;
+  int end = in.length() - 1;
+  while (end >= 0 && isspace(in[end])) end--;
+  for (int i = start; i <= end; i++) {
+    char c = in[i];
+    if (!isspace(c)) s += c; // Remove internal spaces as well
+  }
+  return s;
+}
+
+// Check if string is binary and within length
+bool isValidBinary(const String &s) {
+  if (s.length() == 0) return false;
+  if (s.length() > maxBitsAccepted) return false;
+  for (unsigned int i = 0; i < s.length(); i++) {
+    char c = s[i];
+    if (c != '0' && c != '1') return false;
+  }
+  return true;
+}
+
+// Convert binary string to unsigned long (up to 32 bits safe)
+unsigned long binToULong(const String &s) {
+  unsigned long value = 0;
+  for (unsigned int i = 0; i < s.length(); i++) {
+    value <<= 1;
+    if (s[i] == '1') value |= 1UL;
+  }
+  return value;
+}
+
+// Convert unsigned long to binary string
+String uLongToBin(unsigned long val) {
+  if (val == 0) return "0";
+  String out;
+  while (val > 0) {
+    out = ((val & 1UL) ? '1' : '0') + out;
+    val >>= 1;
+  }
+  return out;
+}
+
+// Pad binary string to width with leading zeros
+String padLeft(const String &s, unsigned int width) {
+  if (s.length() >= width) return s;
+  String pad;
+  for (unsigned int i = 0; i < width - s.length(); i++) pad += '0';
+  return pad + s;
+}
+
+// Print help
+void printHelp() {
+  Serial.println(F("Commands:"));
+  Serial.println(F("  #help        Show this help"));
+  Serial.println(F("  #max=n       Set max input bits (2..32)"));
+  Serial.println(F("  #mode=free   Free mode (no fixed width)"));
+  Serial.println(F("  #mode=8/16.. Set fixed width & overflow detection"));
+  Serial.println(F("  #restart     Restart number entry"));
+  Serial.println(F("  #clear       Clear screen (ANSI)"));
+}
+
+// Apply command line (returns true if it was command)
+bool handleCommand(const String &s) {
+  if (s.length() == 0 || s[0] != '#') return false;
+  if (s.equalsIgnoreCase("#help")) {
+    printHelp();
+  } else if (s.startsWith("#max=")) {
+    int eq = s.indexOf('=');
+    if (eq >= 0) {
+      int n = s.substring(eq + 1).toInt();
+      if (n >= 2 && n <= 32) {
+        maxBitsAccepted = (unsigned int)n;
+        Serial.print(F("Set maxBitsAccepted="));
+        Serial.println(maxBitsAccepted);
+      } else {
+        Serial.println(F("Invalid #max value (2..32)."));
+      }
+    }
+  } else if (s.equalsIgnoreCase("#mode=free")) {
+    fixedWidthMode = false;
+    Serial.println(F("Mode set to free (no forced width)."));
+  } else if (s.startsWith("#mode=")) {
+    int eq = s.indexOf('=');
+    if (eq >= 0) {
+      int n = s.substring(eq + 1).toInt();
+      if (n >= 2 && n <= 32) {
+        fixedWidthMode = true;
+        fixedWidthBits = (unsigned int)n;
+        Serial.print(F("Fixed-width mode set to "));
+        Serial.print(fixedWidthBits);
+        Serial.println(F(" bits."));
+      } else {
+        Serial.println(F("Invalid width (2..32)."));
+      }
+    }
+  } else if (s.equalsIgnoreCase("#restart")) {
+    binA = "";
+    binB = "";
+    state = WAITING_FIRST;
+    Serial.println(F("Restarted."));
+    Serial.println(F("Enter first binary number:"));
+  } else if (s.equalsIgnoreCase("#clear")) {
+    // ANSI clear screen (may not work in all terminals)
+    Serial.write(27); Serial.print(F("[2J"));
+    Serial.write(27); Serial.print(F("[H"));
+    Serial.println(F("Screen cleared."));
+  } else {
+    Serial.println(F("Unknown command. Type #help."));
+  }
+  return true;
+}
+
+void printIntro() {
+  Serial.println(F("Binary Adder Ready. Type #help for commands."));
+  Serial.print(F("Current max bits: "));
+  Serial.println(maxBitsAccepted);
+  if (fixedWidthMode) {
+    Serial.print(F("Mode: fixed width = "));
+    Serial.print(fixedWidthBits);
+    Serial.println(F(" bits."));
+  } else {
+    Serial.println(F("Mode: free (auto width)."));
+  }
+  Serial.println(F("Enter first binary number:"));
+}
+
+void setup() {
+  Serial.begin(SERIAL_BAUD);
+  // Wait brief moment for serial to open (especially in some environments)
+  delay(200);
+  printIntro();
+}
+
+void processLine(String raw) {
+  String s = sanitizeInput(raw);
+
+  // Command?
+  if (handleCommand(s)) return;
+
+  if (state == WAITING_FIRST) {
+    if (!isValidBinary(s)) {
+      Serial.println(F("Invalid binary. Re-enter first binary number:"));
+      return;
+    }
+    binA = s;
+    state = WAITING_SECOND;
+    Serial.println(F("Enter second binary number:"));
+  } else if (state == WAITING_SECOND) {
+    if (!isValidBinary(s)) {
+      Serial.println(F("Invalid binary. Re-enter second binary number:"));
+      return;
+    }
+    binB = s;
+    // Compute result
+    unsigned long valA = binToULong(binA);
+    unsigned long valB = binToULong(binB);
+    unsigned long rawSum = valA + valB;
+    String binSum = uLongToBin(rawSum);
+
+    Serial.println();
+    Serial.println(F("---- RESULT ----"));
+
+    if (fixedWidthMode) {
+      // Pad inputs
+      String aPad = padLeft(binA, fixedWidthBits);
+      String bPad = padLeft(binB, fixedWidthBits);
+      Serial.print(F("A (bin, padded ")); Serial.print(fixedWidthBits); Serial.print(F("): "));
+      Serial.println(aPad);
+      Serial.print(F("B (bin, padded ")); Serial.print(fixedWidthBits); Serial.print(F("): "));
+      Serial.println(bPad);
+    } else {
+      Serial.print(F("A (bin): "));
+      Serial.println(binA);
+      Serial.print(F("B (bin): "));
+      Serial.println(binB);
+    }
+
+    Serial.print(F("A (dec): "));
+    Serial.println(valA);
+    Serial.print(F("B (dec): "));
+    Serial.println(valB);
+
+    if (fixedWidthMode) {
+      Serial.print(F("Sum (raw bin): "));
+      Serial.println(binSum);
+
+      // Check overflow
+      bool overflow = (binSum.length() > fixedWidthBits);
+
+      // Truncate to fixed width (LSBs)
+      unsigned long mask = (fixedWidthBits == 32) ? 0xFFFFFFFFUL : ((1UL << fixedWidthBits) - 1UL);
+      unsigned long truncated = rawSum & mask;
+      String truncatedBin = uLongToBin(truncated);
+      truncatedBin = padLeft(truncatedBin, fixedWidthBits);
+
+      Serial.print(F("Forced width: "));
+      Serial.print(fixedWidthBits);
+      Serial.println(F(" bits"));
+      Serial.print(F("Sum (truncated bin): "));
+      Serial.println(truncatedBin);
+      Serial.print(F("Sum (truncated dec): "));
+      Serial.println(truncated);
+
+      if (overflow) {
+        Serial.println(F("OVERFLOW: Raw sum exceeded fixed width."));
+      } else {
+        Serial.println(F("No overflow."));
+      }
+    } else {
+      Serial.print(F("Sum (bin): "));
+      Serial.println(binSum);
+      Serial.print(F("Sum (dec): "));
+      Serial.println(rawSum);
+      Serial.print(F("Bits (sum): "));
+      Serial.println(binSum.length());
+      Serial.println(F("Mode: free (no forced width)"));
+    }
+    Serial.println(F("----------------"));
+    Serial.println();
+    // Reset for next session
+    binA = "";
+    binB = "";
+    state = WAITING_FIRST;
+    Serial.println(F("Enter first binary number:"));
+  }
+}
+
+void loop() {
+  // Read lines non-blocking
+  while (Serial.available() > 0) {
+    char c = Serial.read();
+    if (c == '\r') {
+      // Ignore carriage return (common with CRLF)
+      continue;
+    } else if (c == '\n') {
+      processLine(lineBuffer);
+      lineBuffer = "";
+    } else {
+      // Simple input guard: limit line length to avoid huge memory usage
+      if (lineBuffer.length() < 80) {
+        lineBuffer += c;
+      }
+    }
+  }
+}
+```
+
+---
+
+## 6. Customization Ideas
+
+- Allow subtraction (`A - B`) with a command toggle.
+- Add signed interpretation (two's complement).
+- Display intermediate carry bits.
+- Implement multi-operand chaining.
+- Add hex output alongside binary/decimal.
+
+---
+
+## 7. Troubleshooting
+
+Issue: Nothing appears in Serial Monitor  
+- Confirm baud set to 115200.  
+- Press reset on Arduino after opening the monitor.
+
+Issue: "Invalid binary" messages  
+- Ensure only characters 0 and 1.  
+- Length must be ≤ maxBitsAccepted.
+
+Issue: Overflow always triggers in fixed mode  
+- Sum may exceed chosen width—choose a larger width (#mode=16) or switch to `#mode=free`.
+
+---
+
+## 8. License
+
+This example is free to use, modify, and distribute for learning purposes.
+
+Enjoy experimenting!
