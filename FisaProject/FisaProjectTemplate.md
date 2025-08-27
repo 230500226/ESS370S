@@ -233,26 +233,25 @@ Student name………………………………………		Student number……�
 | Calculations      |                                                        |          |           | 1            |   |
 
 ---
+| Category         | Description                                           | Examiner | Moderator | Max mark | Mark Awarded |
+|------------------|------------------------------------------------------|----------|-----------|----------|--------------|
+| **Demonstration**| Simulated hardware layout                            |          |           |          |              |
+|                  | Machine waits for button to be pressed               |          |           | 2        |              |
+|                  | Water valve functioning                              |          |           | 2        |              |
+|                  | Student knows when to adjust water level             |          |           | 2        |              |
+|                  | Drum is rotating                                     |          |           | 2        |              |
+|                  | Pumping                                              |          |           | 2        |              |
+|                  | Student knows when to adjust water level for all conditions |    |           | 2        |              |
+|                  | Student knows how to send available power level      |          |           | 2        |              |
+|                  | Demonstrated in designated time                      |          |           | 1        |              |
+|                  | **Subtotal**                                         |          |           | 15       |              |
 
-| Demonstration     | Simulated hardware layout                              | Machine waits for button to be pressed| | 2 |15 |
-|                   | Water valve functioning                                |          |           | 2            |   |
-|                   | Student knows when to adjust water level               |          |           | 2            |   |
-|                   | Drum is rotating                                       |          |           | 2            |   |
-|                   | Pumping                                                |          |           | 2            |   |
-|                   | Student know when to adjust water level for all conditions|       |           | 2            |   |
-|                   | Student knows how to send available power level        |          |           | 2            |   |
-|                   | Demonstrated in designated time                        |          |           | 1            |   |
+| **Presentation** | Timing                                               |          |           | 1        |              |
+|                  | Readable                                             |          |           | 1        |              |
+|                  | Logical                                              |          |           | 3        |              |
+|                  | Pictures                                             |          |           | 1        |              |
+|                  | Dressed formal                                       |          |           | 1        |              |
+|                  | Answers                                              |          |           | 3        |              |
+|                  | **Subtotal**                                         |          |           | 10       |              |
 
----
-
-| Presentation      | Timing                                                 |          |           | 1            |10 |
-|                   | Readable                                               |          |           | 1            |   |
-|                   | Logical                                                |          |           | 3            |   |
-|                   | Pictures                                               |          |           | 1            |   |
-|                   | Dressed formal                                         |          |           | 1            |   |
-|                   | Answers                                                |          |           | 3            |   |
-
----
-
-| Total             |                                                        |          |           |100           |100|
-
+| **Total**        |                                                      |          |           | 100      | 100          |
