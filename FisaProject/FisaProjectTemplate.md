@@ -246,12 +246,15 @@ Student name………………………………………		Student number……�
 |                  | Demonstrated in designated time                      |          |           | 1        |              |
 |                  | **Subtotal**                                         |          |           | 15       |              |
 
-| **Presentation** | Timing                                               |          |           | 1        |              |
-|                  | Readable                                             |          |           | 1        |              |
-|                  | Logical                                              |          |           | 3        |              |
-|                  | Pictures                                             |          |           | 1        |              |
-|                  | Dressed formal                                       |          |           | 1        |              |
-|                  | Answers                                              |          |           | 3        |              |
-|                  | **Subtotal**                                         |          |           | 10       |              |
+| Category        | Description        | Examiner | Moderator | Max mark | Mark Awarded |
+|-----------------|-------------------|----------|-----------|----------|--------------|
+| **Presentation**| Timing            |          |           | 1        |              |
+|                 | Readable          |          |           | 1        |              |
+|                 | Logical           |          |           | 3        |              |
+|                 | Pictures          |          |           | 1        |              |
+|                 | Dressed formal    |          |           | 1        |              |
+|                 | Answers           |          |           | 3        |              |
+|                 | **Subtotal**      |          |           | 10       |              |
+---
 
-| **Total**        |                                                      |          |           | 100      | 100          |
+| **Total** | 100 |
