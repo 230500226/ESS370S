@@ -1,3 +1,5 @@
+<img width="264" height="273" alt="FrontInfo" src="https://github.com/user-attachments/assets/c43e21aa-70fc-4c61-9390-2374408f3ba9" />
+
 # Question 1  
 **100 Points**  
 The design and evaluation of a solar powered washing machine
@@ -90,3 +92,4 @@ If the correct equipment is not available, then the following can be used instea
 
 - An LED can be used to show the operation of a valve.  If the LED is on then the valve is open.
 - Assume the solar system provide 5 volt DC and that your whole system works with 5V DC.
+<img width="288" height="294" alt="Rubric" src="https://github.com/user-attachments/assets/44e66319-f024-4c55-8d1d-02ddd62e507b" />
