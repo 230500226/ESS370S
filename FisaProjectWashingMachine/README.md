@@ -26,7 +26,7 @@ A **separate repository** was created for this simulation project to optimally m
 ## Instructions
 
 - Use the Tinkercad link above to explore the simulation.
-- Refer to the [FisaProjectInstructions](https://github.com/230500226/ESS370S/blob/main/FisaProject/FisaProjectInstructions.md) for full context on requirements, hardware setup, and software logic.
+- Refer to the [FisaProjectInstructions](https://github.com/230500226/ESS370S/blob/main/FisaProjectWashingMachine/FisaProjectInstructions.md) for full context on requirements, hardware setup, and software logic.
 - Clone this repository to access the Arduino code and contribute improvements via branches.
 
 ---
