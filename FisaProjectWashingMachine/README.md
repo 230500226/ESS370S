@@ -21,7 +21,7 @@ A **separate repository** was created for this simulation project to optimally m
 
 ## Tinkercad Simulation Link (most up to date version)
 
-👉 [View the Washing Machine Tinkercad Simulation](https://www.tinkercad.com/join?project-code=YOUR_PROJECT_CODE_HERE)
+👉 [View the Washing Machine Tinkercad Simulation](https://www.tinkercad.com/things/lIeWDSdEnZv-arduinowashingmacinev22)
 
 ## Instructions
 
