@@ -17,7 +17,7 @@ All pin assignments and functional requirements follow the detailed instructions
 
 ## Repository Structure
 
-A **separate repository** was created for this simulation project to optimally manage all versions of the code using branches. This approach allows for clear organization of the base version, feature enhancements, and bugfix iterations, ensuring the project stays well-organized and maintainable as development progresses.
+A [**separate repository**](https://github.com/230500226/WashingMachineESS370FinalProject) was created for this simulation project to optimally manage all versions of the code using branches. This approach allows for clear organization of the base version, feature enhancements, and bugfix iterations, ensuring the project stays well-organized and maintainable as development progresses.
 
 ## Tinkercad Simulation Link (most up to date version)
 
